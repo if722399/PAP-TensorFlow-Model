@@ -1,13 +1,14 @@
 # Libraries
 import pandas as pd
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import plotly.graph_objects as go
 import seaborn as sns
 import plotly.express as px
 plt.style.use('ggplot')
-
+colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 def balancing(df, target_variable='outlier'):
     conteo = df.groupby(target_variable).precio_unitario.count()
@@ -84,3 +85,30 @@ def balancing2(data, bar_chart=False):
         })
 
         fig.show()
+
+def decile_analysis_plot(y):
+    plt.figure(figsize=(7, 4))
+    plt.bar(np.arange(1, 11,1), y)
+    plt.xticks(np.arange(1, 11, 1))
+    plt.xlabel('Decile')
+    plt.ylabel('True Outlier Rate')
+    plt.title('Outlier % Rate by Decile');
+
+def plot_wmetrics(history):
+    metrics = ['loss', 'precision', 'recall', 'auc']
+    for n, metric in enumerate(metrics):
+        name = metric.replace("_"," ").capitalize()
+        plt.subplot(2,2,n+1)
+        plt.plot(history.epoch, history.history[metric], color=colors[0], label='Train')
+        plt.plot(history.epoch, history.history['val_'+metric],
+                 color=colors[0], linestyle="--", label='Val')
+        plt.xlabel('Epoch')
+        plt.ylabel(name)
+        if metric == 'loss':
+            plt.ylim([0, plt.ylim()[1]])
+        elif metric == 'auc':
+            plt.ylim([0.4,1])
+        else:
+            plt.ylim([0,1])
+
+        plt.legend()

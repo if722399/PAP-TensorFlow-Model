@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-
+import numpy as np
 
 def subsampling(df, target_variable):
     # Obtener el valor de la clase que tiene una menor proporción
@@ -32,3 +32,37 @@ def label_encoder(data: "DataFrame"):
         else:
             data[col].fillna(-999, inplace=True)
     return data
+
+def decile_analysis(predictions: "Array", labels: "Array"):
+
+    test_pred = np.array([predictions[i][0] for i in range(len(predictions))])
+
+    test_results = pd.DataFrame(
+    data = 
+    {
+        "predictions": test_pred,
+        "label": labels
+    }
+    )
+
+    test_results = test_results.sort_values(by=['predictions'], ascending=False)
+    test_results.reset_index(inplace=True)
+
+    deciles = np.array_split(np.array(test_results["predictions"]), 10)
+    dec_labels = np.array_split(np.array(test_results["label"]), 10)
+
+    decile_analysis = pd.DataFrame(
+    data = {
+        "Decile": np.arange(1, 11),
+        "Batch": [len(deciles[i]) for i in range(len(deciles))],
+        "Cumulative Batch": np.cumsum([len(deciles[i]) for i in range(len(deciles))]),
+        "Cumulative % Batch": np.round(np.cumsum([len(deciles[i]) for i in range(len(deciles))])/len(test_pred), 4),
+        "True label": [sum(dec_labels[i]) for i in range(len(dec_labels))],
+        "True label %": np.round([sum(dec_labels[i])/sum(test_results["label"]) for i in range(len(dec_labels))],4),
+        "Cumulative label %": np.round(np.cumsum([sum(dec_labels[i])/sum(test_results["label"]) for i in range(len(dec_labels))]), 4),
+        "Probability Range" : [str(np.round(deciles[i].max(),4)) + " - " + str(np.round(deciles[i].min(),4)) for i in range(len(deciles))]   
+    }
+    )
+    
+    decile_analysis.set_index('Decile', inplace =  True)
+    return decile_analysis
